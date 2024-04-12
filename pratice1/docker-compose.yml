@@ -1,0 +1,39 @@
+version: "3"
+services:
+  nginx_proxy:
+    build: ./nginx
+    container_name: nginx_prox
+    ports:
+      - "80:80"
+    depends_on:
+      - flask
+    networks:
+      - front-net
+
+  flask:
+    build: ./backend/
+    container_name: flaskapp
+    restart: on-failure
+    command: gunicorn -b 0.0.0.0:5000 myapp:app
+    expose:
+      - 5000
+    depends_on:
+      - redisdb
+    networks:
+      - back-net
+      - front-net
+
+  redisdb:
+    build: ./redis
+    container_name: redis_db
+    volumes:
+      - ./redis/data:/data
+    networks:
+      - back-net
+
+networks:
+  back-net:
+    driver: bridge
+
+  front-net:
+    driver: bridge
